@@ -56,7 +56,7 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True   # ou defina uma lista em CORS_ALLOWED_ORIGINS
 
-ROOT_URLCONF = 'core_app.urls'
+ROOT_URLCONF = 'core.urls'
 AUTH_USER_MODEL = 'api.User'
 
 TEMPLATES = [
