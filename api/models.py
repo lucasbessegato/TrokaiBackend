@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     avatar = models.URLField(blank=True)
+    fullName = models.TextField(blank=True, null=True)
     reputation_level = models.PositiveSmallIntegerField(default=1)
     reputation_score = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)

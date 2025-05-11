@@ -5,7 +5,7 @@ from .models import User, Category
 @admin.register(User)
 class UserAdmin(DefaultUserAdmin):
     # exibe colunas na listagem
-    list_display = ('id', 'username', 'email', 'avatar', 'reputation_level')
+    list_display = ('id', 'username', 'email', 'avatar', 'reputation_level', 'password', 'fullName')
     list_filter  = ('reputation_level',)
     search_fields = ('username', 'email')
 
