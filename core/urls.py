@@ -4,8 +4,9 @@ from django.views.generic import RedirectView
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework.authtoken.views import obtain_auth_token
 
-from api.views import ProductViewSet, UserViewSet
+from api.views import CustomAuthToken, ProductViewSet, UserViewSet
 
 router = routers.DefaultRouter()
 router.register(r'products', ProductViewSet)
@@ -26,6 +27,8 @@ urlpatterns = [
 
     # API endpoints
     path('api/', include(router.urls)),
+    
+    path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
 
     # JSON/YAML schema
     re_path(
