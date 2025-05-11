@@ -5,10 +5,11 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from api.views import ProductViewSet
+from api.views import ProductViewSet, UserViewSet
 
 router = routers.DefaultRouter()
 router.register(r'products', ProductViewSet)
+router.register(r'users',    UserViewSet)
 
 schema_view = get_schema_view(
    openapi.Info(
