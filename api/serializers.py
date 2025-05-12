@@ -28,8 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
             'avatar',    # URL retornada
             'avatar_file',  # arquivo de input
             'reputation_level','reputation_score',
-            'bio','location','phone','created_at', 'password',
-            'fullName'
+            'phone','created_at', 'password',
+            'fullName', 'city', 'state'
         ]
 
     def _upload_to_cloudinary(self, file):

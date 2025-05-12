@@ -8,9 +8,8 @@ class User(AbstractUser):
     reputation_level = models.PositiveSmallIntegerField(default=1)
     reputation_score = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    bio = models.TextField(blank=True, null=True)
-    location = models.CharField(max_length=200, blank=True, null=True)
+    city = models.TextField(blank=True, null=True)
+    state = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
