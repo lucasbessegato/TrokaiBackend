@@ -23,8 +23,9 @@ pip install -r requirements.txt
 Crie um arquivo `.env` na raiz:
 
 DEBUG=True
-SECRET_KEY=<sua_chave>
-DATABASE_URL=sqlite:///db.sqlite3
+CLOUDINARY_CLOUD_NAME=duufppnuj
+CLOUDINARY_API_KEY=627984437541953
+CLOUDINARY_API_SECRET=qeYCwc3kU6AyDv2j5dmqV6LY88I
 
 
 **4. Executar migrações**

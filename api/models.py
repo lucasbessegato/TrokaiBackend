@@ -32,7 +32,6 @@ class Product(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    image_url = models.URLField()
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='products', on_delete=models.CASCADE)
     acceptable_exchanges = models.JSONField(default=list)

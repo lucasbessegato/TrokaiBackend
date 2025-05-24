@@ -5,12 +5,18 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_nested import routers as nested_routers
 
-from api.views import CustomAuthToken, ProductViewSet, UserViewSet
+from api.views import CustomAuthToken, ProductImageViewSet, ProductViewSet, UserViewSet
 
 router = routers.DefaultRouter()
-router.register(r'products', ProductViewSet)
 router.register(r'users',    UserViewSet)
+router.register(r'products', ProductViewSet)
+
+# cria um router aninhado para /products/{product_pk}/images
+products_router = nested_routers.NestedSimpleRouter(router, r'products', lookup='product')
+products_router.register(r'images', ProductImageViewSet, basename='product-images')
+
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -27,6 +33,7 @@ urlpatterns = [
 
     # API endpoints
     path('api/', include(router.urls)),
+    path('api/', include(products_router.urls)),
     
     path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
 
