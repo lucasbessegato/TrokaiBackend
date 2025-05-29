@@ -1,6 +1,6 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import Product, ProductImage, User
+from .models import Category, Product, ProductImage, User
 import cloudinary.uploader
 
 
@@ -50,6 +50,12 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
         return super().update(instance, validated_data)
     
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'image_url']
+    
     
 class ProductSerializer(serializers.ModelSerializer):
     # exibe a lista de imagens (read-only)
@@ -57,6 +63,7 @@ class ProductSerializer(serializers.ModelSerializer):
     # aceita a lista de trocas como JSON
     acceptable_exchanges = serializers.JSONField()
     user = UserSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Product
