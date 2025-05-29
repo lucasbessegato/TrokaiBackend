@@ -4,18 +4,66 @@ from .models import Product, ProductImage, User
 import cloudinary.uploader
 
 
+class UserSerializer(serializers.ModelSerializer):
+    # avatar será só leitura, vem do Cloudinary
+    avatar = serializers.URLField(read_only=True)
+    # este campo recebe o arquivo de upload
+    avatar_file = serializers.ImageField(write_only=True, required=False)
+    # senha que vem do frontend (write-only)
+    password = serializers.CharField(write_only=True, required=True, min_length=6)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email',
+            'avatar',    # URL retornada
+            'avatar_file',  # arquivo de input
+            'reputation_level','reputation_score',
+            'phone','created_at', 'password',
+            'fullName', 'city', 'state'
+        ]
+
+    def _upload_to_cloudinary(self, file):
+        result = cloudinary.uploader.upload(
+            file,
+            folder='avatars/',
+            overwrite=True,
+        )
+        return result['secure_url']
+
+    def create(self, validated_data):
+        avatar_file = validated_data.pop('avatar_file', None)
+        if avatar_file:
+            validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
+
+        password = validated_data.pop('password')
+        # 3) cria o user (sem senha ainda)
+        user = super().create(validated_data)
+        # 4) faz o hash da senha e salva
+        user.set_password(password)
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        avatar_file = validated_data.pop('avatar_file', None)
+        if avatar_file:
+            validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
+        return super().update(instance, validated_data)
+    
+    
 class ProductSerializer(serializers.ModelSerializer):
     # exibe a lista de imagens (read-only)
     images = serializers.SerializerMethodField()
     # aceita a lista de trocas como JSON
     acceptable_exchanges = serializers.JSONField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Product
         fields = [
-            'id', 'title', 'description', 'image_url',
+            'id', 'title', 'description',
             'category', 'user', 'acceptable_exchanges',
-            'status', 'created_at', 'updated_at',
+            'status', 'created_at', 'updated_at', 'user',
             'images',
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
@@ -69,49 +117,3 @@ class ProductImageSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-class UserSerializer(serializers.ModelSerializer):
-    # avatar será só leitura, vem do Cloudinary
-    avatar = serializers.URLField(read_only=True)
-    # este campo recebe o arquivo de upload
-    avatar_file = serializers.ImageField(write_only=True, required=False)
-    # senha que vem do frontend (write-only)
-    password = serializers.CharField(write_only=True, required=True, min_length=6)
-
-    class Meta:
-        model = User
-        fields = [
-            'id', 'username', 'email',
-            'avatar',    # URL retornada
-            'avatar_file',  # arquivo de input
-            'reputation_level','reputation_score',
-            'phone','created_at', 'password',
-            'fullName', 'city', 'state'
-        ]
-
-    def _upload_to_cloudinary(self, file):
-        result = cloudinary.uploader.upload(
-            file,
-            folder='avatars/',
-            overwrite=True,
-        )
-        return result['secure_url']
-
-    def create(self, validated_data):
-        avatar_file = validated_data.pop('avatar_file', None)
-        if avatar_file:
-            validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
-
-        password = validated_data.pop('password')
-        # 3) cria o user (sem senha ainda)
-        user = super().create(validated_data)
-        # 4) faz o hash da senha e salva
-        user.set_password(password)
-        user.save()
-        return user
-
-    def update(self, instance, validated_data):
-        avatar_file = validated_data.pop('avatar_file', None)
-        if avatar_file:
-            validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
-        return super().update(instance, validated_data)
