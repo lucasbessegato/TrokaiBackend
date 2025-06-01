@@ -55,29 +55,47 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'image_url']
+        
+
+class CategoryField(serializers.PrimaryKeyRelatedField):
+    def to_representation(self, value):
+        return CategorySerializer(value).data
     
     
 class ProductSerializer(serializers.ModelSerializer):
-    # exibe a lista de imagens (read-only)
-    images = serializers.SerializerMethodField()
-    # aceita a lista de trocas como JSON
-    acceptable_exchanges = serializers.JSONField()
+    # aceita um int para category na criação/atualização
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     user = UserSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
+    acceptable_exchanges = serializers.JSONField()
+    images = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
-            'id', 'title', 'description',
-            'category', 'user', 'acceptable_exchanges',
-            'status', 'created_at', 'updated_at', 'user',
+            'id',
+            'title',
+            'description',
+            'category',              # na entrada: inteiro; na saída será substituído
+            'user',
+            'acceptable_exchanges',
+            'status',
+            'created_at',
+            'updated_at',
             'images',
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
     def get_images(self, obj):
-        # retorna as imagens via ProductImageSerializer
         return ProductImageSerializer(obj.images.all(), many=True).data
+
+    def to_representation(self, instance):
+        """
+        Primeiro geramos o dict normal e depois substituímos 'category'
+        pelo serializer completo de Category.
+        """
+        data = super().to_representation(instance)
+        data['category'] = CategorySerializer(instance.category).data
+        return data
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
