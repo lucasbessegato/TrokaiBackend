@@ -22,7 +22,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     # para ?search=texto — faz title__icontains=texto
     search_fields = ['title']
     # para ?category=1 — filtra product__category_id=1
-    filterset_fields = ['category']
+    filterset_fields = ['category', 'user']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
