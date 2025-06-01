@@ -7,14 +7,24 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    
+
+    filter_backends = [
+        filters.SearchFilter,
+        DjangoFilterBackend,
+    ]
+    # para ?search=texto — faz title__icontains=texto
+    search_fields = ['title']
+    # para ?category=1 — filtra product__category_id=1
+    filterset_fields = ['category']
+
     def perform_create(self, serializer):
-        # define o dono do produto como o usuário autenticado
         serializer.save(user=self.request.user)
     
     
