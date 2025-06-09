@@ -1,6 +1,6 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import Category, Product, ProductImage, User
+from .models import Category, Product, ProductImage, Proposal, User
 import cloudinary.uploader
 
 
@@ -141,4 +141,39 @@ class ProductImageSerializer(serializers.ModelSerializer):
         instance.is_main = validated_data.get('is_main', instance.is_main)
         instance.save()
         return instance
+    
 
+class ProposalSerializer(serializers.ModelSerializer):
+    # campos de escrita continuam PK
+    product_offered_id = serializers.PrimaryKeyRelatedField(
+        write_only=True, source='product_offered', queryset=Product.objects.all()
+    )
+    product_requested_id = serializers.PrimaryKeyRelatedField(
+        write_only=True, source='product_requested', queryset=Product.objects.all()
+    )
+    to_user_id = serializers.PrimaryKeyRelatedField(
+        write_only=True, source='to_user', queryset=User.objects.all()
+    )
+
+    # campos de leitura aninhados
+    from_user  = UserSerializer(read_only=True)
+    to_user  = UserSerializer(read_only=True)
+    product_offered = ProductSerializer(read_only=True)
+    product_requested = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = Proposal
+        fields = [
+            'id',
+            # escrita
+            'product_offered_id', 'product_requested_id', 'to_user_id', 'message',
+            # leitura
+            'from_user', 'to_user', 'product_offered', 'product_requested',
+            'status','created_at','updated_at',
+        ]
+        read_only_fields = ['id','status','created_at','updated_at','from_user']
+
+    def create(self, validated_data):
+        # o PrimaryKeyRelatedField já colocou product_offered, etc em validated_data
+        validated_data['from_user'] = self.context['request'].user
+        return super().create(validated_data)

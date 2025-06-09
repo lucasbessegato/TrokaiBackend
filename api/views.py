@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
-from .models import Product, ProductImage, User
-from .serializers import ProductImageSerializer, ProductSerializer, UserSerializer
+from .models import Product, ProductImage, Proposal, User
+from .serializers import ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -80,3 +80,21 @@ class CustomAuthToken(ObtainAuthToken):
             'token': token.key,
             'user':  user_data
         })
+        
+
+class ProposalViewSet(viewsets.ModelViewSet):
+    serializer_class = ProposalSerializer
+    queryset = Proposal.objects.all()
+
+    def get_queryset(self):
+        tab  = self.request.query_params.get('tab')
+        user = self.request.user
+
+        if tab == 'recebidas':
+            return Proposal.objects.filter(to_user=user)
+        if tab == 'enviadas':
+            return Proposal.objects.filter(from_user=user)
+        return Proposal.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(from_user=self.request.user)
