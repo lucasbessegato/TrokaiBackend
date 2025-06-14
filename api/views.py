@@ -26,6 +26,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        
+    def perform_update(self, serializer):
+        product = serializer.save(user=self.request.user)
+        # Apaga todas as imagens existentes do produto
+        product.images.all().delete()
     
     
 class UserViewSet(viewsets.ModelViewSet):
@@ -55,6 +60,9 @@ class ProductImageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # create() do serializer já recebe o product via context
         serializer.save()
+        
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class CustomAuthToken(ObtainAuthToken):
