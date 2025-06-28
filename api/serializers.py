@@ -1,6 +1,6 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import Category, Product, ProductImage, Proposal, User
+from .models import Category, Notification, Product, ProductImage, Proposal, User
 import cloudinary.uploader
 
 
@@ -177,3 +177,18 @@ class ProposalSerializer(serializers.ModelSerializer):
         # o PrimaryKeyRelatedField já colocou product_offered, etc em validated_data
         validated_data['from_user'] = self.context['request'].user
         return super().create(validated_data)
+    
+    
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = [
+            'id',
+            'type',
+            'title',
+            'message',
+            'read',
+            'created_at',
+            'link_to',
+            'related_id',
+        ]

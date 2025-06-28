@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
-from .models import Product, ProductImage, Proposal, User
-from .serializers import ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer
+from .models import Notification, Product, ProductImage, Proposal, User
+from .serializers import NotificationSerializer, ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -105,4 +105,24 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return Proposal.objects.none()
 
     def perform_create(self, serializer):
-        serializer.save(from_user=self.request.user)
+        # 1) Salva a proposta
+        proposal = serializer.save(from_user=self.request.user)
+
+        # 2) Cria a notificação para quem vai receber a proposta
+        Notification.objects.create(
+            user=proposal.to_user,
+            type=Notification.Type.NEW_PROPOSAL,
+            title=f"Nova proposta de {proposal.from_user.username}",
+            message=proposal.message,
+            related_id=proposal.id,
+            link_to=f"/proposals"
+        )
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    queryset = Notification.objects.all()
+    http_method_names = ['get', 'patch', 'head', 'options']
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')

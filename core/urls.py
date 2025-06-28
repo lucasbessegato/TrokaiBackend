@@ -7,12 +7,13 @@ from drf_yasg import openapi
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_nested import routers as nested_routers
 
-from api.views import CustomAuthToken, ProductImageViewSet, ProductViewSet, ProposalViewSet, UserViewSet
+from api.views import CustomAuthToken, NotificationViewSet, ProductImageViewSet, ProductViewSet, ProposalViewSet, UserViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users',    UserViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'proposal', ProposalViewSet)
+router.register(r'notifications', NotificationViewSet)
 
 # cria um router aninhado para /products/{product_pk}/images
 products_router = nested_routers.NestedSimpleRouter(router, r'products', lookup='product')
