@@ -164,12 +164,17 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
             # nome do produto (aqui o solicitado; ajuste se quiser o oferecido)
             nome_produto = updated.product_requested.title
+            action = ''
+            if traduzido == 'Aceita!':
+                action = 'aceitou'
+            elif traduzido == 'Rejeitada':
+                action = 'recusou'
 
             Notification.objects.create(
                 user=updated.from_user,         # quem recebe a notificação
                 type=notif_type,
                 title=f"Sua proposta foi {traduzido}",
-                message=f"{responsavel} aceitou sua proposta para o produto {nome_produto}",
+                message=f"{responsavel} {action} sua proposta para o produto {nome_produto}",
                 related_id=updated.id,
                 link_to=link
             )
