@@ -1,6 +1,7 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import Category, Notification, Product, ProductImage, Proposal, User
+from .models import Category, Notification, Product, ProductImage, Proposal, User, UserRating
+from django.db.models import Avg
 import cloudinary.uploader
 
 
@@ -11,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     avatar_file = serializers.ImageField(write_only=True, required=False)
     # senha que vem do frontend (write-only)
     password = serializers.CharField(write_only=True, required=True, min_length=6)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -20,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'avatar_file',  # arquivo de input
             'reputation_level','reputation_score',
             'phone','created_at', 'password',
-            'fullName', 'city', 'state'
+            'fullName', 'city', 'state', 'rating'
         ]
 
     def _upload_to_cloudinary(self, file):
@@ -49,6 +51,15 @@ class UserSerializer(serializers.ModelSerializer):
         if avatar_file:
             validated_data['avatar'] = self._upload_to_cloudinary(avatar_file)
         return super().update(instance, validated_data)
+    
+    def get_rating(self, obj):
+        """
+        Retorna a média de todos os UserRating recebidos por este usuário.
+        Se não houver avaliações, retorna 0.
+        """
+        agg = obj.received_ratings.aggregate(avg=Avg('rating'))
+        # 'avg' virá como Decimal ou None
+        return round(agg['avg'] or 0, 2)
     
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -190,3 +201,17 @@ class NotificationSerializer(serializers.ModelSerializer):
             'link_to',
             'related_id',
         ]
+        
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserRating
+        fields = [
+            'id',
+            'from_user',
+            'to_user',
+            'rating',
+            'comment',
+            'created_at',
+        ]
+

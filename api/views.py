@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
-from .models import Notification, Product, ProductImage, Proposal, User
+from .models import Notification, Product, ProductImage, Proposal, User, UserRating
 from .serializers import NotificationSerializer, ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -187,3 +187,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+    
+    
+class UserRatingViewSet(viewsets.ModelViewSet):
+    serializer_class = UserRating
+    queryset = UserRating.objects.all()
+    http_method_names = ['get', 'patch', 'head', 'options']
