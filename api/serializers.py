@@ -165,13 +165,11 @@ class ProposalSerializer(serializers.ModelSerializer):
         model = Proposal
         fields = [
             'id',
-            # escrita
             'product_offered_id', 'product_requested_id', 'to_user_id', 'message',
-            # leitura
             'from_user', 'to_user', 'product_offered', 'product_requested',
             'status','created_at','updated_at',
         ]
-        read_only_fields = ['id','status','created_at','updated_at','from_user']
+        read_only_fields = ['id', 'created_at','updated_at']
 
     def create(self, validated_data):
         # o PrimaryKeyRelatedField já colocou product_offered, etc em validated_data

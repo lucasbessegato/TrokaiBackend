@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -95,13 +96,17 @@ class ProposalViewSet(viewsets.ModelViewSet):
     queryset = Proposal.objects.all()
 
     def get_queryset(self):
-        tab  = self.request.query_params.get('tab')
         user = self.request.user
+        tab  = self.request.query_params.get('tab')
+
+        if self.action in ('retrieve', 'update', 'partial_update', 'destroy'):
+            return Proposal.objects.filter(Q(from_user=user) | Q(to_user=user))
 
         if tab == 'recebidas':
-            return Proposal.objects.filter(to_user=user)
+            return Proposal.objects.filter(to_user=user).order_by('-id')
         if tab == 'enviadas':
-            return Proposal.objects.filter(from_user=user)
+            return Proposal.objects.filter(from_user=user).order_by('-id')
+
         return Proposal.objects.none()
 
     def perform_create(self, serializer):
@@ -117,6 +122,57 @@ class ProposalViewSet(viewsets.ModelViewSet):
             related_id=proposal.id,
             link_to=f"/proposals"
         )
+        
+    def perform_update(self, serializer):
+        # 1) pega status antes de atualizar
+        proposal = self.get_object()
+        old_status = proposal.status
+
+        # 2) salva mudanças
+        updated = serializer.save()
+        new_status = updated.status
+
+        # 3) se mudou, cria notificação com link_to adequado
+        if new_status != old_status:
+            # tradutores
+            status_map = {
+                Proposal.Status.PENDING:   "Pendente",
+                Proposal.Status.ACCEPTED:  "Aceita!",
+                Proposal.Status.REJECTED:  "Rejeitada",
+                Proposal.Status.COMPLETED: "Concluída",
+                Proposal.Status.CANCELED:  "Cancelada",
+            }
+            traduzido = status_map[new_status]
+
+            # define tipo e link_to
+            if new_status == Proposal.Status.ACCEPTED:
+                notif_type = Notification.Type.PROPOSAL_ACCEPTED
+                # quem aceitou é o to_user do objeto
+                contato = updated.to_user
+                # monta whatsapp: assume número em formato E.164 sem '+'
+                whatsapp_url = f"https://wa.me/{contato.phone}"
+                link = whatsapp_url
+            elif new_status == Proposal.Status.REJECTED:
+                notif_type = Notification.Type.PROPOSAL_REJECTED
+                link = "/proposals"
+            else:
+                # para outros status, reutilize GENERAL
+                notif_type = Notification.Type.GENERAL
+                link = "/proposals"
+                
+            responsavel  = updated.to_user.fullName or updated.to_user.username
+
+            # nome do produto (aqui o solicitado; ajuste se quiser o oferecido)
+            nome_produto = updated.product_requested.title
+
+            Notification.objects.create(
+                user=updated.from_user,         # quem recebe a notificação
+                type=notif_type,
+                title=f"Sua proposta foi {traduzido}",
+                message=f"{responsavel} aceitou sua proposta para o produto {nome_produto}",
+                related_id=updated.id,
+                link_to=link
+            )
 
 
 class NotificationViewSet(viewsets.ModelViewSet):

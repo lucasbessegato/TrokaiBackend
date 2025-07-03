@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Category, Product, ProductImage
+from .models import User, Category, Product, ProductImage, Notification
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 @admin.register(User)
@@ -41,3 +41,11 @@ class ProductImageAdmin(admin.ModelAdmin):
     list_filter = ('is_main', 'product')
     search_fields = ('product__title',)
     raw_id_fields = ('product',)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'title',
+    )
