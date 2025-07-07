@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Category, Product, ProductImage, Notification
+from .models import Proposal, User, Category, Product, ProductImage, Notification
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
 @admin.register(User)
@@ -48,4 +48,12 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'title',
+    )
+    
+
+@admin.register(Proposal)
+class ProposalAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'message',
     )

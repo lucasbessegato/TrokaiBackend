@@ -117,7 +117,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         Notification.objects.create(
             user=proposal.to_user,
             type=Notification.Type.NEW_PROPOSAL,
-            title=f"Nova proposta de {proposal.from_user.username}",
+            title=f"Nova proposta de {proposal.from_user.fullName}",
             message=proposal.message,
             related_id=proposal.id,
             link_to=f"/proposals"
