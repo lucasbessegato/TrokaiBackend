@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from .models import Notification, Product, ProductImage, Proposal, User, UserRating
-from .serializers import NotificationSerializer, ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer
+from .serializers import NotificationSerializer, ProductImageSerializer, ProductSerializer, ProposalSerializer, UserSerializer, UserRatingSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -190,6 +190,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     
     
 class UserRatingViewSet(viewsets.ModelViewSet):
-    serializer_class = UserRating
+    serializer_class = UserRatingSerializer
     queryset = UserRating.objects.all()
-    http_method_names = ['get', 'patch', 'head', 'options']
+    http_method_names = ['get', 'post', 'patch', 'head', 'options']
+    
